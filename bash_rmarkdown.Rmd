@@ -1,0 +1,304 @@
+---
+title: "Data Starter"
+author: "Sanja Zenker"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This document will give you an introduction to some basic programming and analysis tools. Follow along the tutorial first and work on some application tasks later on. Questions and small tasks during the tutorial are marked by numbers and you can save your answers to those in a document if you want to.
+
+
+## Bash
+
+Bash (Bourne-again-shell) is the, by standard, installed shell on Linux-systems and most other Unix-based systems.
+A shell is a command line processor, which allows you to interact with the machine through text input and output. Although many new Linux distributions utilize graphical interfaces similar to Windows, some programs, including many bioinformatical tools are only accessible using the shell.
+
+
+## Getting started
+
+Linux is installed on the University's ThinLinc Server. If you do not know how to log onto there, start by getting a Cebitec-Account and follow the instructions on the [webpage](https://www.cebitec.uni-bielefeld.de/intranet). It can be helpful to click through some information regarding the Cebitec Compute Cluster as well.
+
+To access the bash-shell, open the Terminal from the taskbar. It is also possible to work from an xterm, by typing xterm in the terminal. The xterm is a terminal emulator that uses fewer ressources than the terminal itself.
+
+```{bash, eval = F}
+#What you should see in the terminal
+user@computer:~$
+user@computer:~$ xterm #optional
+```
+
+You are now in your home directory as your current working directory. To view your working directory type **pwd** (print working directory) and then to view all files in there type **ls**.
+
+```{bash, eval = F}
+pwd
+ls
+```
+
+To view a more detailled output, you can add the option **-l** (long) behind the ls-command. Most programs or commands have, either required or optional, specifications that can be added. Usually there is a **-h** or **--help** command that shows you all possible options with a short description.
+
+To start with the further excercises start by changing the current working directory (cwd) to the project folder **cd** (change directory). You can list the contents as well. Try out **--help** and look at what other options besides **-l** are available. If you scroll to the top you can also see the structure of the command, which can be helpful to know as well.
+
+```{bash, eval = F}
+cd /prj/data-starter
+ls -l
+ls --help
+```
+
+Next you need to make your own directory **mkdir** to save some outputs and files later. Copy the training datasets into your file. Behind the **cp**-command you need to first specify what you want to copy and then where to (the . indicates the cwd). If you use the . make sure to switch in your newly created folder first. You can either add **-r** (recursive) at the end to copy all contents from the folder or add /* at the end of the path. A * always stands for everything. Also check the contents of your folder. When copying documents or folders in a compute cluster you can use **scp**, which is a ssh-encoded secure copy using the secure shell and usually requests the user password.
+Tip: You can speed up typing a path using the "autocomplete" function, meaning hitting tab after you typed a few letters. If your desired folder in the path is the only option, it will add it automatically. When there are still more options left based on the characters you typed, you can list all options by repeating tab or further specify by giving more letters. 
+
+```{bash, eval = F}
+mkdir yourname
+cd yourname
+cp /prj/data-starter/data/bash/* .
+ls
+```
+
+Now create a simple text file. You can open the standard GUI text editor from Linux with gedit and write something in the file, then save and close it manually. Make a new directory **mkdir** and move the file **mv** into it. We now want to remove the whole directory you just made. The remove command is quite powerful. If you just want to delete one file, make sure you name the correct one and do not use * in this. Linux will not ask you like Windows does. When dealing with directories remember to add the **-r** option when removing. Be careful and don't delete your whole *yourname* folder.
+
+```{bash, eval = F}
+touch filename.txt
+ls
+gedit filename.txt
+ls
+mkdir fordeletion
+ls
+mv filename.txt fordeletion
+ls
+rm fordeletion -r
+ls
+```
+
+
+## Scripts and more
+
+Besides typing your commands directly, you can also write a script in any text editor. Open a simple text editor (or any other suited program like Geany3, RStudio). Scripts should start with a shebang **#!** followed by the location of the language the script is written in, so that the interpreter knows what it is dealing with.
+Save the file using save as and save in *yourname* as newworld.sh.
+Our small script will print out "New world" and the date and time from the system. What command is used for printing in bash? Can you add another line printing a different statement (string)? (1)
+
+```{bash, eval = F}
+#!/bin/bash
+echo "New world"
+echo $(date +%F_%T)
+exit
+```
+
+Try executing the script by simply calling it (type newworld.sh). Make sure you are in the folder where you saved the script, otherwise you need to change there or give the absolute path (/prj/data-starter/yourname/newworld.sh). 
+Use the learned commands to check whether the script is in your current working directory.
+This should result in an error message telling you that you do not have the permission for this action.
+You can see your rights for this file with the long option **ls**.
+
+```{bash, eval = F}
+pwd
+ls
+newworld.sh
+#absolute path: /prj/data-starter/yourname/newworld.sh
+#bash: ./test.sh: No permission.
+ls -l
+#output something like this:
+#-rw-r--r-- username folder 87 Feb 24 13:24 newworld.sh
+```
+
+The rights are indicated right at the beginning, with write (w), read (r), and execute (x), but as you can see, you cannot execute the file. Change the rights:
+
+```{bash, eval = F}
+chmod +x newworld.sh #adds execution rights
+ls -l
+```
+
+You should now be able to see the x and execute the script. Another way to solve the rights issue is by putting the program name (in this case bash) in front of the script you want to execute. This does not require a change of rights.
+If you need to own something you can use **chown** instead of chmod. Sometimes you need to run something as a superuser, for example installing a program. Then you need to add **sudo** in front of you commands.
+
+
+##File Manipulation
+
+Next we want to get to know a file that is available on the ftp archive of [TAIR10](ftp://ftp.arabidopsis.org/) (Arabidopsis database). You can download files from an ftp server or http directly from the terminal using **wget**. Make sure you are in your own folder before downloading. 
+Tip: You can copy the link below to the terminal by selecting it as usual and copy with **Str+c**. To insert it in the terminal either click your scroll wheel or select **insert** with a right click in the terminal.
+Careful, in the terminal **Str+c** is the cancel command and will interrupt anything that is currently being executed. Use **Str+Shift+C** to copy from the terminal, equally with **Str+Shift+X** (cut) and **Str+Shift+V** (paste and execute).
+
+```{bash, eval = F}
+wget ftp://ftp.arabidopsis.org/home/tair/Genes/TAIR10_genome_release/TAIR10_blastsets/TAIR10_pep_20110103_representative_gene_model_updated
+```
+
+Since we are going to use this file a lot we want to rename it to something shorter like "TAIR10_pep". This can be done using the **mv** (move) command, which as you know can also move files between directories. The file will be referred to by "TAIR10_pep" in the following.
+
+```{bash, eval = F}
+mv TAIR10_pep_20110103_representative_gene_model_updated TAIR10_pep
+```
+
+Try viewing the file with the **cat** command. As you can see, there is a lot of information rushing acoss the terminal. To reduce the output try using less, head or tail. How many lines does head display by deafult? Find out using **--help** and try printing more or less lines using the needed specificity. (2)
+
+```{bash, eval = F}
+cat TAIR10_pep
+less TAIR10_pep
+head TAIR10_pep
+head --help
+head [command to specify lines] [number of lines] TAIR10_pep #yourcode
+tail TAIR10_pep
+```
+
+The first command **cat** can also be used to concatenate two files. 
+You can also view and edit files with the text editor Vim, which works directly inside the terminal, but you really have to get used to syntax of it in my view.
+
+```{bash, eval = F}
+#calls the editor:
+vi rubisco_protein.txt
+```
+
+Adding no filename behind the **vi** command creates a new file. You can view the file and go through the lines. If you want to actually edit a file or write a new one you need to press escape (try a few times) and then a letter which tells the programm what you want to do. For example, **i** is insert, so you can write your script. You can see on the bottom what you are currently doing. Escape always ends your current tool and gives you the possibility to change the modus or other commands which always start with **:**. Some useful commands are the **:q!** for exit or **:help** for help. You can save your written script with **:w /path/filename.txt**.
+
+## Regular expression
+
+We now want to count how many proteins are in the *TAIR10_pep* file. Since this is a fasta file, we can count the **>**'s at the start of the header lines. The grep command (global search of regular expression and print) comes in handy. You need to specify after the command what pattern you want to match followed by where you want to match it (the file in this case). This will give you the lines which match the pattern. What happens when you add the **-v** option to grep? Check the help function of grep and try it out. (3)
+*Tip: If you are not familiar with regular expression I would highly recommend working through [RegexOne](https://regexone.com/)!
+
+```{bash, eval = F}
+grep ">" TAIR10_pep
+grep ">" -v TAIR10_pep
+grep --help
+```
+
+Since we want the number of >'s, we need to direct the extracted lines to a word count command. This can be done by piping **|** it to **wc** and showing the output with **-l** (count lines). To write it to a file you can direct the output using **>** and adding a filename behind it, which will then create the file or overwrite any existing one with that name. If you want to add something to an existing file use **>>** instead.
+
+```{bash, eval = F}
+grep ">" TAIR10_pep | wc -l
+#write to file
+grep ">" TAIR10_pep | wc -l > genenumber.txt
+```
+
+Take a look at the result with previously learned commands. How many proteins are in the file? (4)
+
+Another way to get something out of a file is using sed (stream editor) with regular expressions (regex).
+
+Sed commands are usually structured "sed [-option] [instruction] [file]". Sed is mostly used to substitute something matched with regex in a file using the s intructions.
+Sed intructions start with a letter indicating the use (**s**ubstitute) followed by what you want to match and what it should be changed to or what should be printed. The option **-r** tells it we are using regular expressions. Between those parts is a delimiter which can be **/, #, _, :**, so for example "s/patterntomatch/whattodo/". In our fasta we want to match the Arabidopsis identifiers in the header line. We make a selection of just those lines with grep and then pipe it to the sed command which now only searches in our pre-selected lines.
+
+```{bash, eval = F}
+grep ">" TAIR10_pep | sed -r "s/>(\S+).*/\1/"
+```
+
+This expression is matching the **>**, then any non-white space **\S** one or more times (+), followed by anything **.** for any number of times \*. The **\S+** is in brackets to enable access to it for printing with **\1**. Remember how to write an output to a file and do so for this command. 
+One issue that one often faces when dealing with Arabidopsis identifiers is that some accessions use splice variants (.1, .2) at the end, while some do not. Removing something like this from a file can be easily done with sed. This example creates a new file but sed can also edit in place by adding **-i** as an option. When editing in place please make a backup copy of the file beforehand in case something goes wrong.
+
+```{bash, eval = F}
+sed -r "s/\.(\S)//" TAIR10_pep > TAIR10_nosplice
+head TAIR10_nosplice
+#alternatively:
+cp TAIR10_pep TAIR10_pep_backup
+sed -i -r "s/\.(\S)//" TAIR10_pep
+```
+
+This sed one liner matches a point **\.** and then the following non-white space character. Remember the **.** normally stands for anything, which is why we need to add the **\** in front of it to escape the special meaning. Since we want to delete it, the second part is empty, so it is not literally deleting it but replacing it with nothing. Besides deleting you can also add something to a line with sed using the **&** in the /whattodowithit/ part of the instruction. Dissect the sed instruction below as we did for the identifier matching and check the new file to see what has changed in the header lines. (5)
+
+```{bash, eval = F}
+#!/bin/bash
+#adds genome number to the end of the header seperated by |
+sed -r "s/(>AT)(.{1}).*/& | \2/" TAIR10_pep_copy > addtoheader.txt
+head addtoheader.txt
+```
+
+If we want to manipulate data from a table, the program **awk** can be helpful to go through it line by line. This program can also use regular expression to identify lines by patterns. Awk also gives you the ability to look at a line in fields, which are accessible using **$1 $2 ...**. You can specify the field seperator using **-F** to "," for example, if you want to read a .csv file, so awk is useful when working with tables. The command below should give you the same results as the grep to count the amount of proteins. The **^** in regular expression states that the following is anchored to the start of a line. So this expression only matches lines that start with **>**, which are then counted subsequently. The second line in the example below creates a similar output as the first sed example given to print the identifiers. Where is the difference in the awk and sed outputs and what is the reason behind the difference? (6)
+
+```{bash, eval = F}
+awk "/^>/" TAIR10_pep | wc -l
+
+grep ">" TAIR10_pep | awk "{print $1}"
+grep ">" TAIR10_pep | sed -r "s/>(\S+).*/\1/"
+```
+
+Generally, an awk command is set up like awk "/patterntomatch/ {whattodowithit}". Awk also has nice loop implementations and of course if-else-clauses. It can also be written as a script by putting the shebang **#!/usr/bin/awk** at the top.
+
+An important difference between matching regular patterns with either sed or awk is, that with sed you can match all occurences of the pattern by adding a **g** (global) behind the last seperator. Usually sed works on the first match in a line. While awk and grep will select the lines with a matching pattern only, sed scans through all lines and can then do further operations on the matches in one line (accessed by \1, \2, .. or the g for all).  This can be seen clearly when simply matching the peroxisome standard localization sequence "SKL" and then piping the output to **wc**. Try the examples and compare the outputs. What is counted in the line using sed? Can you count what the sed line counts without using sed, awk or grep? (7)
+
+```{bash, eval = F}
+awk "/SKL/" TAIR10_pep | wc -l
+sed -r "s/SKL//g" TAIR10_pep | wc -l
+
+grep "SKL" TAIR10_pep | wc -l
+```
+
+
+## Loops and Conditions
+
+Bash is able to loop over number ranges or files and check conditions using if-else-clauses. For the latter, the true/false-statement is contained in brackets **[ ]** and has to be seperated by a whitespace from those.
+
+Bash is also able to do while-loops and until-loops. You can research them on your own if you ever need them. Doing your own research and googling problems is a major helper when programming in general. I learned everything other than basics by typing my problem into the search bar and of course by exchanging knowledge with peers and co-workers. Sites like StackOverflow and StackExchange are great ressources to find solutions to your problems.
+
+Below you can see two exemplary for-loops in two different styles of writing. For-loops are useful when you need to perform the same methods on many inputs, e.g. running kallisto (a mapping tool for sequencing reads) on multiple readfiles or pairs of readfiles. Loops can be written directly in the terminal line by line or with the alternative writing style where the "line-seperation" is a semicolon **;**.
+
+Try to understad what each of the loops is doing. What are they iterating over (**i** is used as the default iterating variable, but could be replaced by any other variable)? What is the syntax of a for-loop and an if-else-clause? What would be their output (remember, echo is used to print an output)? (8) Copy the alternative writing examples to the terminal and view the output. Is it what you expected? Can you edit the second example in a way that it prints the statement for every number that can be divided by three in the range from one to seven? Bash can combine different true-false-statements with **||** (OR) or **&&** (AND). You can use this to hardcode the statement for the conditions in between the given range that match. If you want to try a more advanced condition, which would still apply if the range was extended, try using the operator **%** (modulo). You can google how to use the operator, since it requires additional syntax used for operations in bash.
+Write the loop as a script or at least save your loop in a text file. (9)
+
+```{bash, eval = F}
+#!/bin/bash
+##Exampe 1
+#Indentation is just for readability. Not needed in bash scripting.
+for i in *
+do 
+  head $i
+done
+
+#alternative writing
+for i in *; do head $i; done
+
+##Example 2
+for i in {1..10}
+do
+  if [ $i == 3 ]
+  then
+    echo "Alle guten Dinge sind drei!"
+  else
+    echo $i
+  fi
+done
+
+#alternative writing
+for i in {1..10}; do if [ $i == 3 ]; then echo "Alle guten Dinge sind drei!"; else echo $i; fi; done
+
+```
+
+
+##Applicaion of skills
+
+Please collect the lines of code you use in the terminal or any scripts in **one** document, as well as the outputs that are in question. Add notes if needed for understanding.
+
+First of all, I would like you to get the following information about the TAIR10_pep file:
+
+1. How many amino acids are in all proteins? This can be solved with different grep options and wc options. What percentage is serine (S)? 
+2. How many genes are encoded on each chromosome and what percentage is that of all genes? Use a **for-loop** to extract the number of proteins in combination with awk. It might be helpful getting familiar with the TAIR10 nomenclature for gene id"s. Make sure your counts add up to the th number of all proteins.
+3. Use awk to produce a file with only the Arabidopsis identifier and the short description given in the TAIR10_pep file inside the header. Consider pre-selecting lines with grep and set an appropriate field seperator for the header. Remove the remaining **>** at the start using sed.
+4. Which gene encodes the ribulose-bisphosphate carboxylase (Rubisco) in Arabidopsis? Extract this information from your file with identifiers and descriptions.
+5.
+We now want to align the Rubisco protein sequences from different plants. First, we want to add the rubisco large subunit from *Arabidopsis thaliana* to the rubisco_proteins.fasta. From the previous assignment (or google) you should know which gene encodes the ribulose-biphosphate carboxylase. Open the TAIR10_pep and search for the gene (**Str+f**). Copy it and add it to the rubisco_proteins fasta.
+How many protein sequences are inside the rubisco_proteins.fasta file now?
+
+To align these sequences, we want to use ClustalO, which is already installed on the cluster and can be accessed via the terminal or xterm.
+If you need the path to the executable program you can find it using the **whereis** command. 
+Use the **--help/-h** option to figure out how to tell the program the input and output file. Run the alignment for the rubisco_proteins.fasta and save the result in alignment_rubisco.fasta.
+
+Take a look at your output by using the program seaview. Which sequence is not like the others? Why?
+
+```{bash, eval = F}
+whereis clustalo
+clustalo --help
+
+#your own code
+```
+
+Add your used lines of code to the final assignment.
+
+6.
+You can also find a file named *unknown_protein.fasta* in the data you copied right at the start. We want to use blast via the command line to identify the protein and since it is from a plant (rice) we use our Arabidopsis proteins (TAIR10_pep) as a database. Look at the file and find out which blast application we need. Is it installed on the cluster (does a path exist)? Make a database for blasting from the TAIR10_pep with **makeblastdb**. Check the application with **-help**. Then use the appropriate blast tool to compare out unknown protein. Use an evalue of 10e-10  and save it as a tabular format in an output file. Look at the result. What is the unknown sequence most likely encoding based on the hits in Arabidopsis?
+7.
+Use sed to replace the string "unknown_seq" in place with what you think this sequence encodes. Make sure to leave the rest of the header as is.
+Save your used commands as well.
+
+
+## Takeaway and personal note
+
+As demonstrated in this short introduction, bash can be a helpful tool to quickly take a look at a file (which might be too large and crash Excel if you try to open it there). It is very much needed to run command line accessible programs and some basic knowledge of for loops will make your life easier if you have multiple files to run through one program. A really great and maybe overlooked bash function is this **|** - the pipe. It reduces the amount of code and enables you to literally put a file through a pipeline of manipulations and programs. 
+
+Lastly, I want to say that basic bash knowledge should not be disregarded in favor of other languages like python and R. 
+BUT - python for example has a nice module to access the shell (subprocess) and there are R packages which have adapted the pipe (tidyverse!) and they both offer much more functionality and readability for complex tasks. This said, you should definetly take a look at the R introduction and the Python one.
